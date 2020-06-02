@@ -6,6 +6,8 @@ import inotify.adapters
 from activity_db import ActivityDB
 
 # TODO:
+# - clean up DB time-to-time?
+# - check performance after deleting obsolete data
 # - transform to be a service
 
 
@@ -20,11 +22,7 @@ def main():
             epoch = int(datetime.datetime.now().timestamp())
             activity_db.save_timestamp(epoch)
             break
-        sleep_for_a_while()
-
-
-def sleep_for_a_while():
-    time.sleep(60)
+        time.sleep(60)
 
 
 if __name__ == "__main__":

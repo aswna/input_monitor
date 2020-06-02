@@ -2,6 +2,10 @@ import datetime
 import sqlite3
 from pathlib import Path
 
+# TODO: experiment with DB format for better performance
+#         - store date?
+#         - store start of day?
+
 
 class ActivityDB:
     def __init__(self):
@@ -25,8 +29,10 @@ class ActivityDB:
         self.connection.commit()
 
     def get_activity_on_day(self, timestamp):
-        first_activity_on_day = self.get_timestamp_of_first_activity_on_day(timestamp)
-        last_activity_on_day = self.get_timestamp_of_last_activity_on_day(timestamp)
+        first_activity_on_day = self.get_timestamp_of_first_activity_on_day(
+            timestamp)
+        last_activity_on_day = self.get_timestamp_of_last_activity_on_day(
+            timestamp)
         if first_activity_on_day and last_activity_on_day:
             return (timestamp, last_activity_on_day - first_activity_on_day)
         else:
@@ -45,8 +51,7 @@ class ActivityDB:
         start_of_day = datetime.datetime(
             timestamp.year, timestamp.month, timestamp.day)
         epoch_at_start_of_day = int(start_of_day.timestamp())
-        start_of_next_day = datetime.datetime(
-            timestamp.year, timestamp.month, timestamp.day + 1)
+        start_of_next_day = start_of_day + datetime.timedelta(days=1)
         epoch_at_start_of_next_day = int(start_of_next_day.timestamp())
         self.cursor.execute(
             'SELECT MAX(timestamp) FROM activity '
