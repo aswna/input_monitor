@@ -24,7 +24,7 @@ setup(
         ]
     },
     install_requires=[
-        "inotify",
+        "pyinotify",
         "prettytable",
     ]
 )
