@@ -1,7 +1,7 @@
 import datetime
 import time
 
-import inotify.adapters
+import pyinotify
 
 from activity_db import ActivityDB
 
@@ -9,11 +9,13 @@ from activity_db import ActivityDB
 def main():
     activity_db = ActivityDB()
     activity_db.create()
-    i_notify = inotify.adapters.Inotify()
-    i_notify.add_watch('/dev/input', mask=inotify.constants.IN_ALL_EVENTS)
+    wm = pyinotify.WatchManager()
+    wm.add_watch('/dev/input', mask=pyinotify.ALL_EVENTS)
+    notifier = pyinotify.Notifier(wm, None, timeout=60)
 
     while True:
-        for _event in i_notify.event_gen(yield_nones=False):
+        while notifier.check_events():
+            notifier.read_events()
             now = datetime.datetime.now()
             activity_db.save_timestamp(now)
             break
