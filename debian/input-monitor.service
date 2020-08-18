@@ -1,0 +1,9 @@
+[Unit]
+Description=Input Monitor - Estimated Time to Departure service and client
+
+[Service]
+ExecStart=/usr/bin/input-monitor-service
+Type=simple
+
+[Install]
+WantedBy=multi-user.target

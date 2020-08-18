@@ -1,5 +1,12 @@
-from distutils.core import setup
+#!/usr/bin/env python
+# -*- encoding: utf-8 -*-
+
+from glob import glob
+from os.path import basename
+from os.path import splitext
+
 from setuptools import find_packages
+from setuptools import setup
 
 
 PACKAGE_NAME = "input-monitor"
@@ -15,7 +22,9 @@ setup(
     maintainer=MAINTAINER,
     maintainer_email=MAINTAINER_EMAIL,
     url=URL,
-    packages=find_packages(),
+    packages=find_packages('src'),
+    package_dir={'': 'src'},
+    py_modules=[splitext(basename(path))[0] for path in glob('src/*.py')],
     include_package_data=True,
     entry_points={
         "console_scripts": [

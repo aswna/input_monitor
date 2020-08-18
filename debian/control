@@ -11,5 +11,9 @@ Standards-Version: 3.9.1
 
 Package: input-monitor
 Architecture: all
-Depends: ${misc:Depends}, ${python3:Depends}, python3-pyinotify, python3-prettytable
+Depends:
+    ${misc:Depends},
+    ${python3:Depends},
+    python3-prettytable,
+    python3-pyinotify
 Description: Input Monitor - Estimated Time to Departure service and client
