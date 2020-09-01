@@ -5,8 +5,7 @@ from pathlib import Path
 
 class ActivityDB:
     def __init__(self):
-        db_file = Path.home().joinpath(
-            '.local/share/input_monitor/input_monitor.db')
+        db_file = Path('/var/lib/input_monitor/input_monitor.db')
         db_file.parent.mkdir(parents=True, exist_ok=True)
         self.connection = sqlite3.connect(str(db_file))
         self.cursor = self.connection.cursor()

@@ -12,6 +12,8 @@ override_dh_auto_build:
 
 override_dh_auto_install:
 	python3 setup.py install --force --root=debian/input-monitor --no-compile -O0 --install-layout=deb
+	dh_systemd_enable || true
+	dh_systemd_start || true
 
 override_dh_installinit:
 	dh_installinit -n

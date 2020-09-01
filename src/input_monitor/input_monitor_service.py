@@ -3,7 +3,7 @@ import time
 
 import pyinotify
 
-from activity_db import ActivityDB
+from input_monitor.activity_db import ActivityDB
 
 
 def main():

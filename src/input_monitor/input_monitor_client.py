@@ -5,10 +5,11 @@ DESCRIPTION
 
 import argparse
 import datetime
+import time
 
 from prettytable import PrettyTable
 
-from activity_db import ActivityDB
+from input_monitor.activity_db import ActivityDB
 
 
 def main():
@@ -62,7 +63,7 @@ def get_activity(activity_today):
         return (
             '{0.hour:02d}:{0.minute:02d}:{0.second:02d} ({1})'
             .format(datetime.datetime.fromtimestamp(activity_today),
-                    activity_today))
+                    int(activity_today)))
     else:
         return 'N/A'
 
@@ -72,7 +73,8 @@ def get_estimated_time_of_departure(now, first_activity_today):
         estimated_time_of_departure = datetime.datetime.fromtimestamp(
             first_activity_today + (8 * 60 + 20) * 60)
         estimated_time_to_departure = estimated_time_of_departure - now
-        return '{}'.format(estimated_time_to_departure)
+        etd_seconds = time.gmtime(estimated_time_to_departure.total_seconds())
+        return '{}'.format(time.strftime('%H:%M:%S', etd_seconds))
     else:
         return 'N/A'
 
@@ -90,10 +92,11 @@ def get_latest_activities(now, args, activity_db):
         days = datetime.timedelta(days=days_back)
         date, activity_today = activity_db.get_activity_on_day(now - days)
         if activity_today:
-            activity = datetime.timedelta(seconds=activity_today)
+            activity = datetime.timedelta(seconds=int(activity_today))
+            activity_seconds = time.gmtime(activity.total_seconds())
             activities.append((
                 '{0.year}-{0.month:02d}-{0.day:02d}'.format(date),
-                '{}'.format(activity)))
+                '{}'.format(time.strftime('%H:%M:%S', activity_seconds))))
         else:
             activities.append((
                 '{0.year}-{0.month:02d}-{0.day:02d}'.format(date),
