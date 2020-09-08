@@ -62,7 +62,7 @@ def get_estimated_time_of_departure(now, first_activity_today):
     if first_activity_today:
         estimated_time_of_departure = datetime.datetime.fromtimestamp(
             first_activity_today + (8 * 60 + 20) * 60)
-        estimated_time_to_departure = estimated_time_of_departure - now
+        estimated_time_to_departure = abs(estimated_time_of_departure - now)
         return get_activity_duration(estimated_time_to_departure.total_seconds())
     else:
         return 'N/A'
