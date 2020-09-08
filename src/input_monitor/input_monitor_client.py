@@ -48,24 +48,14 @@ def handle_arguments(args, activity_db):
 def get_the_activities_of_the_day(now, activity_db):
     first_activity_today = \
         activity_db.get_timestamp_of_first_activity_on_day(now)
-    first_activity = get_activity(first_activity_today)
+    first_activity = get_activity_timepoint(first_activity_today)
 
     last_activity_today = \
         activity_db.get_timestamp_of_last_activity_on_day(now)
-    last_activity = get_activity(last_activity_today)
+    last_activity = get_activity_timepoint(last_activity_today)
 
     etd = get_estimated_time_of_departure(now, first_activity_today)
-    return (first_activity, last_activity, etd)
-
-
-def get_activity(activity_today):
-    if activity_today:
-        return (
-            '{0.hour:02d}:{0.minute:02d}:{0.second:02d} ({1})'
-            .format(datetime.datetime.fromtimestamp(activity_today),
-                    int(activity_today)))
-    else:
-        return 'N/A'
+    return (etd, first_activity, last_activity)
 
 
 def get_estimated_time_of_departure(now, first_activity_today):
@@ -73,15 +63,14 @@ def get_estimated_time_of_departure(now, first_activity_today):
         estimated_time_of_departure = datetime.datetime.fromtimestamp(
             first_activity_today + (8 * 60 + 20) * 60)
         estimated_time_to_departure = estimated_time_of_departure - now
-        etd_seconds = time.gmtime(estimated_time_to_departure.total_seconds())
-        return '{}'.format(time.strftime('%H:%M:%S', etd_seconds))
+        return get_activity_duration(estimated_time_to_departure.total_seconds())
     else:
         return 'N/A'
 
 
 def print_etd_and_activities(activities):
     pretty_table = PrettyTable()
-    pretty_table.field_names = ['First activity', 'Last activity', 'ETD']
+    pretty_table.field_names = ['ETD', 'First activity', 'Last activity']
     pretty_table.add_row(activities)
     print(pretty_table)
 
@@ -90,23 +79,47 @@ def get_latest_activities(now, args, activity_db):
     activities = []
     for days_back in reversed(range(args.show_summary_for_days + 1)):
         days = datetime.timedelta(days=days_back)
-        date, activity_today = activity_db.get_activity_on_day(now - days)
-        if activity_today:
-            activity = datetime.timedelta(seconds=int(activity_today))
-            activity_seconds = time.gmtime(activity.total_seconds())
+        date, first_activity_on_day, last_activity_on_day = (
+            activity_db.get_activity_on_day(now - days))
+        if first_activity_on_day and last_activity_on_day:
+            activity_today = last_activity_on_day - first_activity_on_day
             activities.append((
                 '{0.year}-{0.month:02d}-{0.day:02d}'.format(date),
-                '{}'.format(time.strftime('%H:%M:%S', activity_seconds))))
+                '{}'.format(get_activity_duration(activity_today)),
+                '{}'.format(get_activity_timepoint(first_activity_on_day)),
+                '{}'.format(get_activity_timepoint(last_activity_on_day))))
         else:
             activities.append((
                 '{0.year}-{0.month:02d}-{0.day:02d}'.format(date),
+                'N/A',
+                'N/A',
                 'N/A'))
     return activities
 
 
+def get_activity_timepoint(activity):
+    return get_activity_using(datetime.datetime.fromtimestamp, activity)
+
+
+def get_activity_duration(activity):
+    return get_activity_using(datetime.datetime.utcfromtimestamp, activity)
+
+
+def get_activity_using(func, activity):
+    if activity:
+        return '{0.hour:02d}:{0.minute:02d}'.format(func(activity))
+    else:
+        return 'N/A'
+
+
 def print_summary(activities):
     pretty_table = PrettyTable()
-    pretty_table.field_names = ['Date', 'Time spent with work']
+    pretty_table.field_names = [
+        'Date',
+        'Time spent with work',
+        'First activity',
+        'Last activity'
+    ]
     for activity in activities:
         pretty_table.add_row(activity)
     print(pretty_table)

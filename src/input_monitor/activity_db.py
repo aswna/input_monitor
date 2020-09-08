@@ -43,9 +43,9 @@ class ActivityDB:
         last_activity_on_day = self.get_timestamp_of_last_activity_on_day(
             date_time)
         if first_activity_on_day and last_activity_on_day:
-            return (date_time, last_activity_on_day - first_activity_on_day)
+            return (date_time, first_activity_on_day, last_activity_on_day)
         else:
-            return (date_time, None)
+            return (date_time, None, None)
 
     def get_timestamp_of_first_activity_on_day(self, date_time):
         start_of_day = datetime.datetime(
