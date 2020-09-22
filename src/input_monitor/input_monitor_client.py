@@ -46,14 +46,10 @@ def handle_arguments(args, activity_db):
 
 
 def get_the_activities_of_the_day(now, activity_db):
-    first_activity_today = \
-        activity_db.get_timestamp_of_first_activity_on_day(now)
+    date, first_activity_today, last_activity_today, _net_activity = (
+        activity_db.get_activity_on_day(now))
     first_activity = get_activity_timepoint(first_activity_today)
-
-    last_activity_today = \
-        activity_db.get_timestamp_of_last_activity_on_day(now)
     last_activity = get_activity_timepoint(last_activity_today)
-
     etd = get_estimated_time_of_departure(now, first_activity_today)
     return (etd, first_activity, last_activity)
 
@@ -63,7 +59,12 @@ def get_estimated_time_of_departure(now, first_activity_today):
         estimated_time_of_departure = datetime.datetime.fromtimestamp(
             first_activity_today + (8 * 60 + 20) * 60)
         estimated_time_to_departure = abs(estimated_time_of_departure - now)
-        return get_activity_duration(estimated_time_to_departure.total_seconds())
+        prefix = ''
+        if now > estimated_time_of_departure:
+            prefix = '!'
+        return '{}{}'.format(
+            prefix,
+            get_activity_duration(estimated_time_to_departure.total_seconds()))
     else:
         return 'N/A'
 
@@ -79,18 +80,20 @@ def get_latest_activities(now, args, activity_db):
     activities = []
     for days_back in reversed(range(args.show_summary_for_days + 1)):
         days = datetime.timedelta(days=days_back)
-        date, first_activity_on_day, last_activity_on_day = (
+        date, first_activity, last_activity, net_activity = (
             activity_db.get_activity_on_day(now - days))
-        if first_activity_on_day and last_activity_on_day:
-            activity_today = last_activity_on_day - first_activity_on_day
+        if first_activity and last_activity and net_activity:
+            gross_activity = last_activity - first_activity
             activities.append((
                 '{0.year}-{0.month:02d}-{0.day:02d}'.format(date),
-                '{}'.format(get_activity_duration(activity_today)),
-                '{}'.format(get_activity_timepoint(first_activity_on_day)),
-                '{}'.format(get_activity_timepoint(last_activity_on_day))))
+                '{}'.format(get_activity_duration(net_activity)),
+                '{}'.format(get_activity_duration(gross_activity)),
+                '{}'.format(get_activity_timepoint(first_activity)),
+                '{}'.format(get_activity_timepoint(last_activity))))
         else:
             activities.append((
                 '{0.year}-{0.month:02d}-{0.day:02d}'.format(date),
+                'N/A',
                 'N/A',
                 'N/A',
                 'N/A'))
@@ -116,7 +119,8 @@ def print_summary(activities):
     pretty_table = PrettyTable()
     pretty_table.field_names = [
         'Date',
-        'Time spent with work',
+        'Time spent with work (net)',
+        'Time spent with work (gross)',
         'First activity',
         'Last activity'
     ]

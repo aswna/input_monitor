@@ -12,8 +12,11 @@ computer.
   > sudo apt purge input-monitor
 
 ## Further plans (TODO)
-- rework DB and activity_db
-  - use table schema:
-    DATE | first activity epoch | last activity epoch | net activity
-- calculate & store net activity (increase on activity & store it every minute)
+- Make lunch-time duration configurable (default is 20 minutes)
+- improve summary feature
+  - default could be 7-10 days (or last week + actual)
+  - somehow we should display all the records (-s 0)
+  - somehow we should detect if there are no more older records to speed
+    up display
 - remove .db file at purge (do not remove at update/remove)
+  maybe only at incompatible DB updates?

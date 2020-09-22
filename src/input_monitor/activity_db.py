@@ -4,6 +4,8 @@ from pathlib import Path
 
 
 class ActivityDB:
+    timeout = 60  # seconds
+
     def __init__(self):
         db_file = Path('/var/lib/input_monitor/input_monitor.db')
         db_file.parent.mkdir(parents=True, exist_ok=True)
@@ -14,56 +16,66 @@ class ActivityDB:
         self.connection.commit()
         self.connection.close()
 
+    @staticmethod
+    def date_to_text(date_time):
+        return '{}-{:02d}-{:02d}'.format(
+            date_time.year,
+            date_time.month,
+            date_time.day
+        )
+
     def create(self):
         self.cursor.execute(
-            'CREATE TABLE IF NOT EXISTS activity (timestamp INTEGER)')
+            'CREATE TABLE IF NOT EXISTS activity ('
+            '  date TEXT, '
+            '  first_activity INTEGER, '
+            '  last_activity INTEGER, '
+            '  net_activity INTEGER'
+            ')')
 
     def save_timestamp(self, date_time):
-        first_activity_today = self.get_timestamp_of_first_activity_on_day(
-            date_time)
-        last_activity_today = self.get_timestamp_of_last_activity_on_day(
-            date_time)
-        epoch = date_time.timestamp()
-        if (
-                first_activity_today is not None and
-                last_activity_today is not None and
-                first_activity_today != last_activity_today
-        ):
+        date_text = self.date_to_text(date_time)
+        epoch = int(date_time.timestamp())
+        if self.has_entry_for_today(date_text):
             self.cursor.execute(
-                'UPDATE activity SET timestamp = {} WHERE timestamp = {}'
-                .format(epoch, last_activity_today))
+                'UPDATE activity '
+                'SET last_activity = {}, net_activity = net_activity + 60 '
+                'WHERE date == "{}"'
+                .format(epoch, date_text))
         else:
             self.cursor.execute(
-                'INSERT INTO activity VALUES ({})'.format(epoch))
+                'INSERT INTO activity VALUES ("{}", {}, {}, {})'.format(
+                    date_text,
+                    epoch,
+                    epoch,
+                    0,
+                )
+            )
         self.connection.commit()
 
     def get_activity_on_day(self, date_time):
-        first_activity_on_day = self.get_timestamp_of_first_activity_on_day(
-            date_time)
-        last_activity_on_day = self.get_timestamp_of_last_activity_on_day(
-            date_time)
-        if first_activity_on_day and last_activity_on_day:
-            return (date_time, first_activity_on_day, last_activity_on_day)
-        else:
-            return (date_time, None, None)
-
-    def get_timestamp_of_first_activity_on_day(self, date_time):
-        start_of_day = datetime.datetime(
-            date_time.year, date_time.month, date_time.day)
-        epoch_at_start_of_day = int(start_of_day.timestamp())
+        date_text = self.date_to_text(date_time)
         self.cursor.execute(
-            'SELECT MIN(timestamp) FROM activity WHERE timestamp >= {}'
-            .format(epoch_at_start_of_day))
-        return self.cursor.fetchone()[0]
+            'SELECT first_activity, last_activity, net_activity '
+            'FROM activity '
+            'WHERE date == "{}"'
+            .format(date_text)
+        )
+        result = self.cursor.fetchone()
+        return (
+            date_time,
+            result[0],
+            result[1],
+            result[2]
+        ) if result else (
+            date_time,
+            None,
+            None,
+            None
+        )
 
-    def get_timestamp_of_last_activity_on_day(self, date_time):
-        start_of_day = datetime.datetime(
-            date_time.year, date_time.month, date_time.day)
-        epoch_at_start_of_day = int(start_of_day.timestamp())
-        start_of_next_day = start_of_day + datetime.timedelta(days=1)
-        epoch_at_start_of_next_day = int(start_of_next_day.timestamp())
+    def has_entry_for_today(self, date_text):
         self.cursor.execute(
-            'SELECT MAX(timestamp) FROM activity '
-            'WHERE timestamp >= {} AND timestamp < {}'
-            .format(epoch_at_start_of_day, epoch_at_start_of_next_day))
-        return self.cursor.fetchone()[0]
+            'SELECT 1 FROM activity WHERE date == "{}"'.format(date_text)
+        )
+        return True if self.cursor.fetchone() else False
