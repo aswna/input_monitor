@@ -1,4 +1,3 @@
-import datetime
 import sqlite3
 from pathlib import Path
 
@@ -31,7 +30,8 @@ class ActivityDB:
             '  first_activity INTEGER, '
             '  last_activity INTEGER, '
             '  net_activity INTEGER'
-            ')')
+            ')'
+        )
 
     def save_timestamp(self, date_time):
         date_text = self.date_to_text(date_time)
@@ -39,17 +39,18 @@ class ActivityDB:
         if self.has_entry_for_today(date_text):
             self.cursor.execute(
                 'UPDATE activity '
-                'SET last_activity = {}, net_activity = net_activity + 60 '
+                'SET last_activity = {}, net_activity = net_activity + {} '
                 'WHERE date == "{}"'
-                .format(epoch, date_text))
+                .format(
+                    epoch,
+                    self.timeout,
+                    date_text
+                )
+            )
         else:
             self.cursor.execute(
-                'INSERT INTO activity VALUES ("{}", {}, {}, {})'.format(
-                    date_text,
-                    epoch,
-                    epoch,
-                    0,
-                )
+                f'INSERT INTO activity VALUES '
+                f'("{date_text}", {epoch}, {epoch}, 0)'
             )
         self.connection.commit()
 
@@ -78,4 +79,4 @@ class ActivityDB:
         self.cursor.execute(
             'SELECT 1 FROM activity WHERE date == "{}"'.format(date_text)
         )
-        return True if self.cursor.fetchone() else False
+        return bool(self.cursor.fetchone())

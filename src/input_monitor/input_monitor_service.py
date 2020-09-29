@@ -9,9 +9,13 @@ from input_monitor.activity_db import ActivityDB
 def main():
     activity_db = ActivityDB()
     activity_db.create()
-    wm = pyinotify.WatchManager()
-    wm.add_watch('/dev/input', mask=pyinotify.ALL_EVENTS)
-    notifier = pyinotify.Notifier(wm, None, timeout=ActivityDB.timeout)
+    watch_manager = pyinotify.WatchManager()
+    watch_manager.add_watch('/dev/input', mask=pyinotify.ALL_EVENTS)
+    notifier = pyinotify.Notifier(
+        watch_manager,
+        None,
+        timeout=ActivityDB.timeout
+    )
 
     while True:
         while notifier.check_events():
