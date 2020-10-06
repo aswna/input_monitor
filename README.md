@@ -6,14 +6,12 @@ computer.
   > dpkg-buildpackage -b -uc -tc
 
 ## Install package
-  > sudo dpkg -i ../input-monitor_1.0.0_all.deb
+  > sudo dpkg -i ../input-monitor_1.0.1_all.deb
 
 ## Remove package
   > sudo apt purge input-monitor
 
 ## Further plans (TODO)
-- make output with pretty table optional
-  - some kind of raw output could be handled better
 - handle .db file
   - remove .db file at purge
   - do not remove it at update/remove

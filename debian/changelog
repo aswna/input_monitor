@@ -1,5 +1,14 @@
+input-monitor (1.0.1) Morning Team; urgency=low
+
+  [Minor improvements]
+  * Rework argument handling
+  * Add option for output format
+
+ -- Morning Team <no-reply@morning.team>  Tue, 06 Oct 2020 09:00:00 +0000
+
 input-monitor (1.0.0) Morning Team; urgency=low
 
+  [Initial release]
   * Initial release
 
- -- Morning Team <no-reply@morning.team>  Tue, 14 Jul 2020 09:18:23 +0200
+ -- Morning Team <no-reply@morning.team>  Tue, 14 Jul 2020 09:00:00 +0000

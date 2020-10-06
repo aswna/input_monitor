@@ -23,49 +23,59 @@ def parse_arguments():
         description=description,
         formatter_class=argparse.RawDescriptionHelpFormatter
     )
-    group = parser.add_mutually_exclusive_group()
-    group.add_argument(
-        '-e', '--etd',
-        action='store_true',
-        help='print estimated time to departure'
+    subparsers = parser.add_subparsers(
+        help='Print Summary or Estimated Time to Departure'
     )
-    group.add_argument(
-        '-s', '--show-summary-for-days',
-        action='store_true',
-        help='print latest active times summary'
+    parser.add_argument(
+        '-f', '--format',
+        metavar='FORMAT',
+        default='pretty',
+        choices=['pretty', 'plain'],
+        help='set output format, choose from {%(choices)s}, '
+             'default is %(default)s'
     )
 
-    # TODO: DAYS is used for summary only, MINUTES is used for ETD only
-    parser.add_argument(
-        '-d', '--days',
-        metavar='DAYS',
-        type=int,
-        default=7 + datetime.datetime.now().weekday(),
-        help='set days for summary'
+    parser_etd = subparsers.add_parser(
+        'etd',
+        help='print estimated time to departure'
     )
-    parser.add_argument(
+    parser_etd.add_argument(
         '-l', '--lunch-time-duration',
         metavar='MINUTES',
         type=int,
         default=20,
         help='set lunch time duration in minutes'
     )
+    parser_etd.set_defaults(etd=True)
+
+    parser_summary = subparsers.add_parser(
+        'summary',
+        help='print latest active times summary'
+    )
+    parser_summary.add_argument(
+        '-d', '--days',
+        metavar='DAYS',
+        type=int,
+        default=7 + datetime.datetime.now().weekday(),
+        help='set days for summary'
+    )
+    parser_summary.set_defaults(summary=True)
 
     return parser.parse_args()
 
 
 def handle_arguments(args, activity_db):
     now = datetime.datetime.now()
-    if args.etd:
+    if getattr(args, 'etd', False):
         activities = get_the_activities_of_the_day(
             now,
             activity_db,
             args.lunch_time_duration
         )
-        print_etd_and_activities(activities)
-    elif args.show_summary_for_days:
+        print_etd_and_activities(args, activities)
+    elif getattr(args, 'summary', False):
         activities = get_latest_activities(now, args.days, activity_db)
-        print_summary(activities)
+        print_summary(args, activities)
     else:
         print('No action!')
 
@@ -105,11 +115,14 @@ def get_estimated_time_of_departure(
         return 'N/A'
 
 
-def print_etd_and_activities(activities):
-    pretty_table = PrettyTable()
-    pretty_table.field_names = ['ETD', 'First activity', 'Last activity']
-    pretty_table.add_row(activities)
-    print(pretty_table)
+def print_etd_and_activities(args, activities):
+    if args.format == 'pretty':
+        pretty_table = PrettyTable()
+        pretty_table.field_names = ['ETD', 'First activity', 'Last activity']
+        pretty_table.add_row(activities)
+        print(pretty_table)
+    else:
+        print(activities[0])
 
 
 def get_latest_activities(now, days, activity_db):
@@ -154,18 +167,22 @@ def get_activity_using(func, activity):
         return 'N/A'
 
 
-def print_summary(activities):
-    pretty_table = PrettyTable()
-    pretty_table.field_names = [
-        'Date',
-        'Active time',
-        'Total time',
-        'First activity',
-        'Last activity'
-    ]
-    for activity in activities:
-        pretty_table.add_row(activity)
-    print(pretty_table)
+def print_summary(args, activities):
+    if args.format == 'pretty':
+        pretty_table = PrettyTable()
+        pretty_table.field_names = [
+            'Date',
+            'Active time',
+            'Total time',
+            'First activity',
+            'Last activity'
+        ]
+        for activity in activities:
+            pretty_table.add_row(activity)
+        print(pretty_table)
+    else:
+        for activity in activities:
+            print('\t'.join(activity))
 
 
 if __name__ == "__main__":
