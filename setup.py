@@ -10,7 +10,7 @@ from setuptools import setup
 
 
 PACKAGE_NAME = "input-monitor"
-PACKAGE_VERSION = "1.0.1"
+PACKAGE_VERSION = "1.0.2"
 MAINTAINER = "Morning Team"
 MAINTAINER_EMAIL = "no-reply@morning.team"
 URL = "https://github.com/aswna/input_monitor"
