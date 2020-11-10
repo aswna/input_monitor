@@ -6,7 +6,7 @@ for tracking active times at the computer.
   > dpkg-buildpackage -b -uc -tc
 
 ## Install package
-  > sudo dpkg -i ../input-monitor_1.0.2_all.deb
+  > sudo dpkg -i ../input-monitor_1.0.3_all.deb
 
 ## Remove package
   > sudo apt purge input-monitor
@@ -34,16 +34,8 @@ for tracking active times at the computer.
 ```
 
 ## Further plans (TODO)
-- add option to have more fine-grained statistics (timeout 60s -> 5s?)
-
 - config option for required daily working time (default hard-coded setting is 8 hours)
-
-- improve summary feature
-  - somehow we should display all the records
-    - with -s 0?
-  - somehow we should detect if there are no more older records
-    - this could speed up the "display" for larger look back times
-
-- record more detailed output?
-  - that could be put on charts
-  - create a GUI for this?
+- to be able to display all the summary records
+  - with DAYS 0/-1?
+- detect if there are no more older records (for larger DAYS)
+  - this could speed up the "display" for larger look back times

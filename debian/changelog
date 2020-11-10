@@ -1,3 +1,9 @@
+input-monitor (1.0.3) Morning Team; urgency=low
+
+  [Decrease timeout to 5 seconds from 60]
+
+ -- Morning Team <no-reply@morning.team>  Tue, 05 Nov 2020 09:00:00 +0000
+
 input-monitor (1.0.2) Morning Team; urgency=low
 
   [Remove .db file at purge]
