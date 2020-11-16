@@ -3,7 +3,7 @@ from pathlib import Path
 
 
 class ActivityDB:
-    timeout = 5  # seconds
+    timeout = 1  # seconds
 
     def __init__(self):
         db_file = Path('/var/lib/input_monitor/input_monitor.db')
